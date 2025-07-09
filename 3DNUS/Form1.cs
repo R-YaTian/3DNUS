@@ -2,11 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.Diagnostics;
@@ -33,6 +29,7 @@ namespace _3DNUS
                 t_spoof.Enabled = false;
             }
         }
+
         private void b_download_Click(object sender, EventArgs e)
         {
             l_error.Visible = false;
@@ -50,7 +47,7 @@ namespace _3DNUS
             }
             if(c_spoof.Checked && t_spoof.Text.Length == 0)
             {
-                MessageBox.Show("No spoofing version entered"); 
+                MessageBox.Show("No spoofing version entered");
                 return;
             }
 
@@ -78,7 +75,7 @@ namespace _3DNUS
                     return;
                 }
             }
-   
+
             if (t_titleid.Text.Contains("."))
             {
                 string firmw = t_titleid.Text;
@@ -89,7 +86,7 @@ namespace _3DNUS
                 BackgroundWorker fd = new BackgroundWorker();
                 fd.DoWork += (obj, r) => firmwdownload(firmw, reg);
                 fd.RunWorkerAsync();
-                
+
             }
             else
             {
@@ -139,11 +136,11 @@ namespace _3DNUS
             }
             catch
             {
-                log(2, "Error downloading title " + title + " v" + version + " make sure the entered title ID and versions are correct.");              
+                log(2, "Error downloading title " + title + " v" + version + " make sure the entered title ID and versions are correct.");
                 if (!t_titleid.Text.Contains("."))
                 {
                     p_input.Enabled = true;
-                    Cursor = Cursors.Default;                 
+                    Cursor = Cursors.Default;
                 }
                 return;
 
@@ -161,7 +158,7 @@ namespace _3DNUS
             int contentcounter = BitConverter.ToInt16(cc, 0);
             log(1,"Title has " + contentcounter + " contents.");
 
-            //download files           
+            //download files
             WebClient contd = new WebClient();
             for (int i = 1; i <= contentcounter; i++)
             {
@@ -189,18 +186,18 @@ namespace _3DNUS
             {
                 p_progress.Parent.Invoke(new MethodInvoker(delegate { p_progress.Value = p_progress.Value + 2; }));
             }
-            //change version number          
+            //change version number
             if (c_spoof.Checked)
             {
                 int fws = int.Parse(spoof);
-                string hex = fws.ToString("X");                
+                string hex = fws.ToString("X");
                 log(1, "changing the version number to: " + spoof + "("+ hex + ")");
 
                 byte[] nv = tobyte(hex);
                 tmd.Seek(476, SeekOrigin.Begin);
                 tmd.WriteByte(nv[0]);
                 tmd.WriteByte(nv[1]);
-             
+
             }
             if (!t_titleid.Text.Contains("."))
             {
@@ -239,7 +236,7 @@ namespace _3DNUS
                     Directory.Move(ftmp, cd + "\\" + t_titleid.Text + "\\" + title);
                 }
                 else
-                {   
+                {
                     if (Directory.Exists(cd + "\\" + title + "v" + version))
                     {
                         Directory.Delete(cd + "\\" + title + "v" + version, true);
@@ -259,13 +256,14 @@ namespace _3DNUS
                 Cursor = Cursors.Default;
             }
         }
+
         private void firmwdownload(string firm, string reg)
         {
 
             string spoof;
             string[] titles = null;
             string cd = Path.GetDirectoryName(Application.ExecutablePath);
-            if (String.IsNullOrWhiteSpace(this.openFileDialog1.SafeFileName))
+            if (String.IsNullOrEmpty(this.openFileDialog1.SafeFileName))
             {
                 try
                 {
@@ -273,7 +271,6 @@ namespace _3DNUS
                     titlelist.DownloadFile("http://yls8.mtheall.com/ninupdates/titlelist.php?sys=ctr&csv=1", cd + "\\titlelist.csv");
                     log(2, "Downloading titlelist complete");
                     titles = File.ReadAllLines(cd + "\\titlelist.csv");
-
                 }
                 catch
                 {
@@ -289,7 +286,7 @@ namespace _3DNUS
                     }
                 }
             }
-            else 
+            else
             {
                 titles = File.ReadAllLines(this.openFileDialog1.FileName);
                 log(1, "Using local titlelist " + this.openFileDialog1.FileName);
@@ -316,14 +313,14 @@ namespace _3DNUS
                         string use = null;
                         foreach (string temp in csvfirm)
                         {
-                            string currentclean = temp;                           
+                            string currentclean = temp;
                             int[] intcc = Array.ConvertAll(currentclean.Replace(".", "").Split('-'), int.Parse);
-                           
+
                             if (wantedfw[0]<intcc[0]&&wantedfw[1]<intcc[1])
                             {
                                 break;
                             }
-                            use = currentclean;  
+                            use = currentclean;
                         }
                         //set download title
                         title = csv[0];
@@ -332,7 +329,7 @@ namespace _3DNUS
                         // get version number
                         string[] aver = csv[2].Split(' ');
                         if (csv[2].Contains(" "))
-                        {                            
+                        {
                             version = aver[verindex].Replace("v", "");
                         }
                         else
@@ -360,7 +357,7 @@ namespace _3DNUS
                             spoof = "4444";
                         }
                         //send the command
-                        singledownload(title, version, spoof);                        
+                        singledownload(title, version, spoof);
                     }
                 }
                 p_progress.Parent.Invoke(new MethodInvoker(delegate { p_progress.Value = p_progress.Value + 1; }));
@@ -373,24 +370,26 @@ namespace _3DNUS
             p_input.Invoke((MethodInvoker)(() => p_input.Enabled = true));
             Cursor = Cursors.Default;
         }
+    
         private void log(int nl, string msg)
         {
-               for (int i = 0; i < nl; i++)
-                {
-                    t_log.Invoke((MethodInvoker)(() => t_log.AppendText("\r\n")));
-                }
-               t_log.Invoke((MethodInvoker)(() =>t_log.AppendText(msg)));
-               if(msg.Contains("Error"))
-               {
-                   l_error.Invoke((MethodInvoker)(() => l_error.Visible = true));
-               }
-          }
+            for (int i = 0; i < nl; i++)
+            {
+                t_log.Invoke((MethodInvoker)(() => t_log.AppendText("\r\n")));
+            }
+            t_log.Invoke((MethodInvoker)(() =>t_log.AppendText(msg)));
+            if(msg.Contains("Error"))
+            {
+                l_error.Invoke((MethodInvoker)(() => l_error.Visible = true));
+            }
+        }
+
         public static byte[] tobyte(string hex)
         {
             Dictionary<string, byte> hexindex = new Dictionary<string, byte>();
             for (int i = 0; i <= 255; i++)
                 hexindex.Add(i.ToString("X2"), (byte)i);
-            
+
             while (hex.Length <4)
             {
                 hex = "0" + hex;
@@ -412,5 +411,4 @@ namespace _3DNUS
             this.openFileDialog1.ShowDialog();
         }
     }
-    }
-
+}

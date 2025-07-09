@@ -1,3 +1,8 @@
 3DNUS/bin/Debug/
 *.cia
 3DNUS/obj/Debug/
+.vs/
+*.suo
+[Rr]elease/
+[Dd]ebug/
+*.user
